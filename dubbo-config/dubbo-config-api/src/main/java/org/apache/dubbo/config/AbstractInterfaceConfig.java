@@ -280,7 +280,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      *
      * Load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
-     *
+     * 个人翻译：加载注册表并将其转换为@link url，优先级顺序为：系统属性>Dubbo注册表配置
      * @param provider whether it is the provider side
      * @return
      */
@@ -302,7 +302,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     if (!map.containsKey(Constants.PROTOCOL_KEY)) {
                         map.put(Constants.PROTOCOL_KEY, Constants.DUBBO_PROTOCOL);
                     }
-                    List<URL> urls = UrlUtils.parseURLs(address, map);
+                    List<URL> urls = UrlUtils.parseURLs(address, map);//address转URL
 
                     for (URL url : urls) {
                         url = URLBuilder.from(url)

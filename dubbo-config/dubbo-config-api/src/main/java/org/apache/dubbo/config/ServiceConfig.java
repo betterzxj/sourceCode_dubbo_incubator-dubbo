@@ -334,7 +334,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (shouldDelay()) {
             delayExportExecutor.schedule(this::doExport, delay, TimeUnit.MILLISECONDS);
         } else {
-            doExport();
+            doExport();//
         }
     }
 
@@ -372,7 +372,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
         }
-        doExportUrls();
+        doExportUrls();//
     }
 
     private void checkRef() {
@@ -409,12 +409,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
-        List<URL> registryURLs = loadRegistries(true);
-        for (ProtocolConfig protocolConfig : protocols) {
+        List<URL> registryURLs = loadRegistries(true);//加载注册表并将其转换为@link url，优先级顺序为：系统属性>Dubbo注册表配置
+        for (ProtocolConfig protocolConfig : protocols) {//遍历的原因是：dubbo支持多协议
             String pathKey = URL.buildKey(getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), group, version);
             ProviderModel providerModel = new ProviderModel(pathKey, ref, interfaceClass);
             ApplicationModel.initProviderModel(pathKey, providerModel);
-            doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+            doExportUrlsFor1Protocol(protocolConfig, registryURLs);//
         }
     }
 
@@ -525,13 +525,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         String scope = url.getParameter(Constants.SCOPE_KEY);
         // don't export when none is configured
+        //配置为none不暴露
         if (!Constants.SCOPE_NONE.equalsIgnoreCase(scope)) {
 
             // export to local if the config is not remote (export to remote only when config is remote)
+            //配置不为remote时，做本地暴露（配置为remote时，表示只暴露远程服务）
             if (!Constants.SCOPE_REMOTE.equalsIgnoreCase(scope)) {
                 exportLocal(url);
             }
             // export to remote if the config is not local (export to local only when config is local)
+            //配置不为local时，做远程暴露（配置为local时，表示只暴露本地服务）
             if (!Constants.SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
@@ -581,12 +584,21 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void exportLocal(URL url) {
+        /**
+         *  LOCAL_PROTOCOL：injvm    本地暴露的url是以injvm开头的
+         *  LOCALHOST_VALUE：127.0.0.1
+         */
         if (!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
             URL local = URLBuilder.from(url)
                     .setProtocol(Constants.LOCAL_PROTOCOL)
                     .setHost(LOCALHOST_VALUE)
                     .setPort(0)
                     .build();
+            /**
+             * 拿到对外提供服务的实际类ref
+             * 通过ProxyFactory类的getInvoker方法，将ref生成一个AbstractProxyInvoker，到这一步就完成具体服务到Invoker的转化
+             * 接下来是Invoker到Exporter的转化：Exporter<?> exporter = protocol.export()
+             */
             Exporter<?> exporter = protocol.export(
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
             exporters.add(exporter);
