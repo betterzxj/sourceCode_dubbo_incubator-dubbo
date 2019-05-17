@@ -166,6 +166,14 @@ public class RegistryProtocol implements Protocol {
     }
 
     @Override
+    /**
+     * 主要做如下一些操作：包含了服务导出，注册，以及数据订阅等逻辑
+     *
+     * 调用 doLocalExport 导出服务
+     * 向注册中心注册服务
+     * 向注册中心进行订阅 override 数据
+     * 创建并返回 DestroyableExporter
+     */
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
         URL registryUrl = getRegistryUrl(originInvoker);
         // url to export locally
@@ -181,9 +189,11 @@ public class RegistryProtocol implements Protocol {
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         //export invoker
+        // 导出服务
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
         // url to registry
+        //获取Registry
         final Registry registry = getRegistry(originInvoker);
         final URL registeredProviderUrl = getRegisteredProviderUrl(providerUrl, registryUrl);
         ProviderInvokerWrapper<T> providerInvokerWrapper = ProviderConsumerRegTable.registerProvider(originInvoker,
