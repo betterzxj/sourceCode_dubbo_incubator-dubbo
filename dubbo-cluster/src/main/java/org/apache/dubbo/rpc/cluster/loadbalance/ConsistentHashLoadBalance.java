@@ -49,6 +49,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         String key = invokers.get(0).getUrl().getServiceKey() + "." + methodName;
         int identityHashCode = System.identityHashCode(invokers);
         ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
+        //初始化 并 返回选择的Invoker
         if (selector == null || selector.identityHashCode != identityHashCode) {
             selectors.put(key, new ConsistentHashSelector<T>(invokers, methodName, identityHashCode));
             selector = (ConsistentHashSelector<T>) selectors.get(key);
